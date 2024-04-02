@@ -2,7 +2,7 @@
 // - https://keystonejs.com/docs/config/lists
 
 import { list } from '@keystone-6/core';
-import { allowAll } from '@keystone-6/core/access';
+import { allOperations, allowAll } from '@keystone-6/core/access';
 
 // see https://keystonejs.com/docs/fields/overview for the full list of fields
 //   this is a few common fields for an example
@@ -12,22 +12,40 @@ import {
   password,
   timestamp,
   select,
+  checkbox,
 } from '@keystone-6/core/fields';
 
 // the document field is a more complicated field, so it has it's own package
 import { document } from '@keystone-6/fields-document';
-// if you want to make your own fields, see https://keystonejs.com/docs/guides/custom-fields
-
-// when using Typescript, you can refine your types to a stricter subset by importing
-// the generated types from '.keystone/types'
 import type { Lists } from '.keystone/types';
+
+export type Session = {
+  id: string
+  admin: boolean
+}
+
+function hasSession ({ session }: { session?: Session }) {
+  return Boolean(session)
+}
+
+function isAdmin ({ session }: { session?: Session }) {
+  if (!session) return false
+  return session.admin
+}
+
+const isUser = ({ session }: { session: Session }) =>
+  !!session?.id;
+
+function isAdminOrOnlySameUser ({ session }: { session?: Session }) {
+  if (!session) return false
+  if (session.admin) return {} // unfiltered for admins
+  return {
+    id: { equals: session.id },
+  }
+}
 
 export const lists: Lists = {
   User: list({
-    // WARNING
-    //   for this starter project, anyone can create, query, update and delete anything
-    //   if you want to prevent random people on the internet from accessing your data,
-    //   you can find out more at https://keystonejs.com/docs/guides/auth-and-access-control
     access: allowAll,
 
     // this is the fields for our User list
@@ -39,7 +57,9 @@ export const lists: Lists = {
       }),
       password: password({ validation: { isRequired: true } }),
       posts: relationship({ ref: 'Post.author', many: true }),
-
+      admin: checkbox({ access: {
+        update: isAdmin,
+      }}),
       createdAt: timestamp({
         // this sets the timestamp to Date.now() when the user is first created
         defaultValue: { kind: 'now' },

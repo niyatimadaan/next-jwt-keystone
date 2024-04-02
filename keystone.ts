@@ -1,5 +1,5 @@
 import {config} from '@keystone-6/core';
-import { session } from './src/keystone/auth';
+import { jwtSessionStrategy } from './src/keystone/auth';
 import { lists } from './src/keystone/schema';
 
 export default config({
@@ -9,7 +9,22 @@ export default config({
         idField: { kind: 'uuid' },
     },
     lists,
-    // session,
+    session: jwtSessionStrategy,
+    ui: {
+        publicPages: [
+          '/auth',
+          '/api/register',
+        ],
+    
+        // adding page middleware ensures that users are redirected to the signin page if they are not signed in.
+        pageMiddleware: async ({ wasAccessAllowed }) => {
+          if (wasAccessAllowed) return
+          return {
+            kind: 'redirect',
+            to: '/auth',
+          }
+        },
+      },
     // graphql: {
     //     generateNextGraphqlAPI: true,
     // },

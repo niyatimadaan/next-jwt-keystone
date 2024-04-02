@@ -8,6 +8,7 @@ type User {
   password: PasswordState
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
+  admin: Boolean
   createdAt: DateTime
 }
 
@@ -30,6 +31,7 @@ input UserWhereInput {
   name: StringFilter
   email: StringFilter
   posts: PostManyRelationFilter
+  admin: BooleanFilter
   createdAt: DateTimeNullableFilter
 }
 
@@ -84,6 +86,11 @@ input PostManyRelationFilter {
   none: PostWhereInput
 }
 
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
+}
+
 input DateTimeNullableFilter {
   equals: DateTime
   in: [DateTime!]
@@ -99,6 +106,7 @@ input UserOrderByInput {
   id: OrderDirection
   name: OrderDirection
   email: OrderDirection
+  admin: OrderDirection
   createdAt: OrderDirection
 }
 
@@ -112,6 +120,7 @@ input UserUpdateInput {
   email: String
   password: String
   posts: PostRelateToManyForUpdateInput
+  admin: Boolean
   createdAt: DateTime
 }
 
@@ -132,6 +141,7 @@ input UserCreateInput {
   email: String
   password: String
   posts: PostRelateToManyForCreateInput
+  admin: Boolean
   createdAt: DateTime
 }
 
@@ -309,6 +319,7 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  endSession: Boolean!
 }
 
 type Query {
